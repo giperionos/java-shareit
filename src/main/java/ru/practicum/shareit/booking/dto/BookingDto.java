@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.practicum.shareit.booking.BookingStatus;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.validation.constraints.Future;
 import javax.validation.constraints.FutureOrPresent;
@@ -28,7 +30,10 @@ public class BookingDto {
     private LocalDateTime end;
 
     @NotNull(message = "Не указана вещь для брони.")
-    private Long itemId;
+    private ItemDto item;
+
+    @NotNull(message = "Не указан пользователь, осуществляющий бронирование.")
+    private UserDto booker;
 
     @NotNull(message = "Не указан статус брони.")
     private BookingStatus status;

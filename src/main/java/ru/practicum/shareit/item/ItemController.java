@@ -8,6 +8,7 @@ import ru.practicum.shareit.item.dto.ItemUpdateMarker;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.service.ItemService;
+import ru.practicum.shareit.user.service.UserService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,11 +19,12 @@ import java.util.stream.Collectors;
 public class ItemController {
 
     private final ItemService itemService;
+    private final UserService userService;
 
     @PostMapping
     public ItemDto createItem(@Validated(ItemCreateMarker.class) @RequestBody ItemDto itemDto,
                               @RequestHeader("X-Sharer-User-Id") Long userId) {
-        Item createdItem = itemService.createItem(ItemMapper.toItem(itemDto, userId));
+        Item createdItem = itemService.createItem(ItemMapper.toItem(itemDto, userService.getUserById(userId)));
         return ItemMapper.toItemDto(createdItem);
     }
 
@@ -30,7 +32,7 @@ public class ItemController {
     public ItemDto updateItem(@Validated(ItemUpdateMarker.class) @RequestBody ItemDto itemDto,
                               @RequestHeader("X-Sharer-User-Id") Long userId,
                               @PathVariable Long itemId) {
-        Item updatedItem = itemService.updateItem(itemId, ItemMapper.toItem(itemDto, userId));
+        Item updatedItem = itemService.updateItem(itemId, ItemMapper.toItem(itemDto, userService.getUserById(userId)));
         return ItemMapper.toItemDto(updatedItem);
     }
 

@@ -27,7 +27,7 @@ public class ItemServiceImpl implements ItemService {
 
         //сначала нужно убедиться, что такой пользователь существует
         try {
-            userStorage.getUserById(item.getOwnerId());
+            userStorage.getUserById(item.getOwner().getId());
         } catch (UserUnknownException e) {
             log.info("Ошибка при добавлении вещи: {}", e.getMessage());
             throw e;
@@ -42,7 +42,7 @@ public class ItemServiceImpl implements ItemService {
         User currentUser;
 
         try {
-            currentUser = userStorage.getUserById(item.getOwnerId());
+            currentUser = userStorage.getUserById(item.getOwner().getId());
         } catch (UserUnknownException e) {
             log.info("Ошибка при обновлении информации о вещи: {}", e.getMessage());
             throw e;
@@ -62,7 +62,7 @@ public class ItemServiceImpl implements ItemService {
         //если id пользователя из вещи не совпадает с id пользователя,
         //который пришел из контролера,
         //значит пользователь с фронта пытается редактировать не свою вещь
-        if (foundedItem.getOwnerId().longValue() != currentUser.getId().longValue()) {
+        if (foundedItem.getOwner().getId().longValue() != currentUser.getId().longValue()) {
             throw new ItemSecurityException(String.format("Пользователь с id = %d не может работать с вещью с id = %d",
                     currentUser.getId(), foundedItem.getId()));
         }
@@ -75,8 +75,8 @@ public class ItemServiceImpl implements ItemService {
             foundedItem.getName(),
             foundedItem.getDescription(),
             foundedItem.getAvailable(),
-            foundedItem.getOwnerId(),
-            foundedItem.getRequestId()
+            foundedItem.getOwner(),
+            foundedItem.getRequest()
         );
 
         //обновить нужно только те поля, что пришли

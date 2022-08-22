@@ -63,7 +63,7 @@ public class ItemStorageInMemoryImpl implements ItemStorage {
 
     @Override
     public List<Item> getAllUserItems(Long userId) {
-        return items.values().stream().filter((item) -> item.getOwnerId().longValue() == userId.longValue()).collect(Collectors.toList());
+        return items.values().stream().filter((item) -> item.getOwner().getId().longValue() == userId.longValue()).collect(Collectors.toList());
     }
 
     @Override
