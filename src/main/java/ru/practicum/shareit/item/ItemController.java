@@ -3,8 +3,8 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.item.dto.ItemCreateMarker;
-import ru.practicum.shareit.item.dto.ItemUpdateMarker;
+import ru.practicum.shareit.common.Create;
+import ru.practicum.shareit.common.Update;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.service.ItemService;
@@ -22,14 +22,14 @@ public class ItemController {
     private final UserService userService;
 
     @PostMapping
-    public ItemDto createItem(@Validated(ItemCreateMarker.class) @RequestBody ItemDto itemDto,
+    public ItemDto createItem(@Validated(Create.class) @RequestBody ItemDto itemDto,
                               @RequestHeader("X-Sharer-User-Id") Long userId) {
         Item createdItem = itemService.createItem(ItemMapper.toItem(itemDto, userService.getUserById(userId)));
         return ItemMapper.toItemDto(createdItem);
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto updateItem(@Validated(ItemUpdateMarker.class) @RequestBody ItemDto itemDto,
+    public ItemDto updateItem(@Validated(Update.class) @RequestBody ItemDto itemDto,
                               @RequestHeader("X-Sharer-User-Id") Long userId,
                               @PathVariable Long itemId) {
         Item updatedItem = itemService.updateItem(itemId, ItemMapper.toItem(itemDto, userService.getUserById(userId)));
