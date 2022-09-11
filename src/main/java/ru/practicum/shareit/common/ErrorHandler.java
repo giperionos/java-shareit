@@ -7,7 +7,14 @@ import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import ru.practicum.shareit.booking.exceptions.BookingHimSelfException;
+import ru.practicum.shareit.booking.exceptions.BookingSecurityException;
+import ru.practicum.shareit.booking.exceptions.BookingTryToUpdateSameStatusException;
+import ru.practicum.shareit.booking.exceptions.BookingUnknownException;
+import ru.practicum.shareit.item.exceptions.CommentForNotExistBookingException;
 import ru.practicum.shareit.item.exceptions.ItemSecurityException;
+import ru.practicum.shareit.item.exceptions.ItemUnavailableException;
 import ru.practicum.shareit.item.exceptions.ItemUnknownException;
 import ru.practicum.shareit.user.exceptions.UserAlreadyExistEmailException;
 import ru.practicum.shareit.user.exceptions.UserUnknownException;
@@ -21,6 +28,13 @@ public class ErrorHandler {
     public ErrorResponse handleValidateException(MethodArgumentNotValidException exception) {
         log.info("400: {}", exception.getMessage(), exception);
         return new ErrorResponse(HttpStatus.BAD_REQUEST.toString(), getPrettyMessageForMethodArgumentNotValidException(exception.getMessage()));
+    }
+
+    @ExceptionHandler({MethodArgumentTypeMismatchException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
+        log.info("400: {}", exception.getMessage(), exception);
+        return new ErrorResponse(HttpStatus.BAD_REQUEST.toString(), getPrettyMessageForMethodArgumentTypeMismatchException(exception.getMessage()));
     }
 
     @ExceptionHandler({MissingRequestHeaderException.class})
@@ -37,11 +51,18 @@ public class ErrorHandler {
         return new ErrorResponse(HttpStatus.FORBIDDEN.toString(), exception.getMessage());
     }
 
-    @ExceptionHandler({UserUnknownException.class, ItemUnknownException.class})
+    @ExceptionHandler({UserUnknownException.class, ItemUnknownException.class, BookingUnknownException.class, BookingSecurityException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleUnknownEntityException(RuntimeException exception) {
         log.info("404: {}", exception.getMessage(), exception);
         return new ErrorResponse(HttpStatus.NOT_FOUND.toString(), exception.getMessage());
+    }
+
+    @ExceptionHandler({ItemUnavailableException.class, EndDateBeforeStartDateException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleItemUnavailableException(RuntimeException exception) {
+        log.info("400: {}", exception.getMessage(), exception);
+        return new ErrorResponse(HttpStatus.BAD_REQUEST.toString(), exception.getMessage());
     }
 
     @ExceptionHandler({UserAlreadyExistEmailException.class})
@@ -49,6 +70,20 @@ public class ErrorHandler {
     public ErrorResponse handleAlreadyExistException(RuntimeException exception) {
         log.info("409: {}", exception.getMessage(), exception);
         return new ErrorResponse(HttpStatus.CONFLICT.toString(), exception.getMessage());
+    }
+
+    @ExceptionHandler({BookingTryToUpdateSameStatusException.class, CommentForNotExistBookingException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleUpdateException(RuntimeException exception) {
+        log.info("400: {}", exception.getMessage(), exception);
+        return new ErrorResponse(HttpStatus.BAD_REQUEST.toString(), exception.getMessage());
+    }
+
+    @ExceptionHandler({BookingHimSelfException.class})
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleBookingHimSelfException(RuntimeException exception) {
+        log.info("404: {}", exception.getMessage(), exception);
+        return new ErrorResponse(HttpStatus.NOT_FOUND.toString(), exception.getMessage());
     }
 
     private String getPrettyMessageForMethodArgumentNotValidException(String message) {
@@ -64,6 +99,23 @@ public class ErrorHandler {
             log.info("getPrettyMessageForMethodArgumentNotValidException: {}", e.getMessage(), e);
         }
 
+        return prettyMessage;
+    }
+
+    private String getPrettyMessageForMethodArgumentTypeMismatchException(String message) {
+        String prettyMessage = message;
+
+        if (message.contains("BookingState")) {
+             try {
+                String shortStr = message.substring(message.indexOf("for value") + 9);
+                String param = shortStr.substring(0, shortStr.indexOf(";"))
+                        .replace("'","").trim();
+
+                 prettyMessage = String.format("Unknown state: %s", param);
+            } catch (Exception e) {
+                log.info("getPrettyMessageForMethodArgumentTypeMismatchException: {}", e.getMessage(), e);
+            }
+        }
         return prettyMessage;
     }
 }
