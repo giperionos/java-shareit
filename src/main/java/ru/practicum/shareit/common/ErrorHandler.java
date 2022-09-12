@@ -8,10 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import ru.practicum.shareit.booking.exceptions.BookingHimSelfException;
-import ru.practicum.shareit.booking.exceptions.BookingSecurityException;
-import ru.practicum.shareit.booking.exceptions.BookingTryToUpdateSameStatusException;
-import ru.practicum.shareit.booking.exceptions.BookingUnknownException;
+import ru.practicum.shareit.booking.exceptions.*;
 import ru.practicum.shareit.item.exceptions.CommentForNotExistBookingException;
 import ru.practicum.shareit.item.exceptions.ItemSecurityException;
 import ru.practicum.shareit.item.exceptions.ItemUnavailableException;
@@ -30,11 +27,11 @@ public class ErrorHandler {
         return new ErrorResponse(HttpStatus.BAD_REQUEST.toString(), getPrettyMessageForMethodArgumentNotValidException(exception.getMessage()));
     }
 
-    @ExceptionHandler({MethodArgumentTypeMismatchException.class})
+    @ExceptionHandler({BookingUnknownStateException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
+    public ErrorResponse handleBookingUnknownStateException(BookingUnknownStateException exception) {
         log.info("400: {}", exception.getMessage(), exception);
-        return new ErrorResponse(HttpStatus.BAD_REQUEST.toString(), getPrettyMessageForMethodArgumentTypeMismatchException(exception.getMessage()));
+        return new ErrorResponse(HttpStatus.BAD_REQUEST.toString(), exception.getMessage());
     }
 
     @ExceptionHandler({MissingRequestHeaderException.class})
@@ -99,23 +96,6 @@ public class ErrorHandler {
             log.info("getPrettyMessageForMethodArgumentNotValidException: {}", e.getMessage(), e);
         }
 
-        return prettyMessage;
-    }
-
-    private String getPrettyMessageForMethodArgumentTypeMismatchException(String message) {
-        String prettyMessage = message;
-
-        if (message.contains("BookingState")) {
-             try {
-                String shortStr = message.substring(message.indexOf("for value") + 9);
-                String param = shortStr.substring(0, shortStr.indexOf(";"))
-                        .replace("'","").trim();
-
-                 prettyMessage = String.format("Unknown state: %s", param);
-            } catch (Exception e) {
-                log.info("getPrettyMessageForMethodArgumentTypeMismatchException: {}", e.getMessage(), e);
-            }
-        }
         return prettyMessage;
     }
 }

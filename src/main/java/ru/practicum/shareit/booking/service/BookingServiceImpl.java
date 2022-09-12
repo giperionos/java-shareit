@@ -19,6 +19,7 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.exceptions.UserUnknownException;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -126,27 +127,35 @@ public class BookingServiceImpl implements BookingService {
 
         switch (state) {
             case ALL:
-                userBookings = bookingRepository.findAllBookingsByUserId(userId);
+                userBookings = bookingRepository.findAllByBooker_IdOrderByStartDesc(userId);
                 break;
 
             case CURRENT:
-                userBookings = bookingRepository.findCurrentBookingsByUserId(userId);
+                userBookings = bookingRepository
+                        .findAllByBooker_IdAndStartBeforeAndEndAfterOrderByStartDesc(
+                                userId, LocalDateTime.now(), LocalDateTime.now());
                 break;
 
             case PAST:
-                userBookings = bookingRepository.findBookingsInPastByUserIdAndStatus(userId, List.of(BookingStatus.CANCELED, BookingStatus.APPROVED));
+                userBookings = bookingRepository
+                        .findAllByBooker_IdAndStatusInAndEndBeforeOrderByStartDesc(
+                                userId, List.of(BookingStatus.CANCELED, BookingStatus.APPROVED),
+                                LocalDateTime.now());
                 break;
 
             case FUTURE:
-                userBookings = bookingRepository.findFutureBookingsByUserId(userId);
+                userBookings = bookingRepository
+                        .findAllByBooker_IdAndStartAfterOrderByStartDesc(userId, LocalDateTime.now());
                 break;
 
             case WAITING:
-                userBookings = bookingRepository.findBookingsByUserIdAndStatus(userId, BookingStatus.WAITING);
+                userBookings = bookingRepository
+                        .findAllByBooker_IdAndStatusOrderByStartDesc(userId, BookingStatus.WAITING);
                 break;
 
             case REJECTED:
-                userBookings = bookingRepository.findBookingsByUserIdAndStatus(userId, BookingStatus.REJECTED);
+                userBookings = bookingRepository
+                        .findAllByBooker_IdAndStatusOrderByStartDesc(userId, BookingStatus.REJECTED);
                 break;
 
             default:
@@ -181,27 +190,32 @@ public class BookingServiceImpl implements BookingService {
 
         switch (state) {
             case ALL:
-                userBookings = bookingRepository.findAllBookingsByItemsIds(itemIds);
+                userBookings = bookingRepository.findAllByItem_IdInOrderByStartDesc(itemIds);
                 break;
 
             case CURRENT:
-                userBookings = bookingRepository.findCurrentBookingsByItemsIds(itemIds);
+                userBookings = bookingRepository.findAllByItem_IdInAndStartBeforeAndEndAfterOrderByStartDesc(
+                        itemIds, LocalDateTime.now(), LocalDateTime.now());
                 break;
 
             case PAST:
-                userBookings = bookingRepository.findBookingsInPastByItemsIdsAndStatus(itemIds, List.of(BookingStatus.CANCELED, BookingStatus.APPROVED));
+                userBookings = bookingRepository.findAllByItem_IdInAndStatusInAndEndBeforeOrderByStartDesc(
+                        itemIds, List.of(BookingStatus.CANCELED, BookingStatus.APPROVED), LocalDateTime.now());
                 break;
 
             case FUTURE:
-                userBookings = bookingRepository.findFutureBookingsByItemsIds(itemIds);
+                userBookings = bookingRepository.findAllByItem_IdInAndStartAfterOrderByStartDesc(
+                        itemIds, LocalDateTime.now());
                 break;
 
             case WAITING:
-                userBookings = bookingRepository.findBookingsByItemsIdsAndStatus(itemIds, List.of(BookingStatus.WAITING));
+                userBookings = bookingRepository.findAllByItem_IdInAndStatusInOrderByStartDesc(
+                        itemIds, List.of(BookingStatus.WAITING));
                 break;
 
             case REJECTED:
-                userBookings = bookingRepository.findBookingsByItemsIdsAndStatus(itemIds, List.of(BookingStatus.REJECTED));
+                userBookings = bookingRepository.findAllByItem_IdInAndStatusInOrderByStartDesc(
+                        itemIds, List.of(BookingStatus.REJECTED));
                 break;
 
             default:

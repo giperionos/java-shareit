@@ -18,6 +18,7 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.exceptions.UserUnknownException;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -100,7 +101,9 @@ public class ItemServiceImpl implements ItemService {
                 );
 
         //получить список текущих броней для этой вещи, чтобы проверить далее
-        List<Booking> activeBookings = bookingRepository.findCurrentBookingsByItemsIds(List.of(itemId)); //, BookingStatus.APPROVED
+        List<Booking> activeBookings = bookingRepository
+                .findAllByItem_IdInAndStartBeforeAndEndAfterOrderByStartDesc(
+                        List.of(itemId), LocalDateTime.now(), LocalDateTime.now());
 
         //Получить комментарии к данной вещи
         List<Comment> comments = getCommentsForItem(itemId);
@@ -143,7 +146,7 @@ public class ItemServiceImpl implements ItemService {
             return new ArrayList<>();
         }
 
-        return itemRepository.findItemsByKeyWord(keyWord.toLowerCase()).stream()
+        return itemRepository.findItemsByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyWord, keyWord).stream()
                 .filter((Item::getAvailable))
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
@@ -160,7 +163,8 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new ItemUnknownException(String.format("Не найдена вещь с id = %d", itemId)));
 
         //проверить, что пользователь, который пишет комментарий, действительно брал вещь в аренду
-        Booking booking = bookingRepository.findBookingByUserIdAndItemIdInPast(user.getId(), foundedItem.getId());
+        Booking booking = bookingRepository.findBookingByBooker_IdAndItem_IdAndEndBeforeOrderByStartDesc(
+                user.getId(), foundedItem.getId(), LocalDateTime.now());
 
         if (booking == null) {
             throw new CommentForNotExistBookingException(
@@ -178,11 +182,13 @@ public class ItemServiceImpl implements ItemService {
     private Booking getLastBookingForItem(Long itemId) {
         //last - последнее завершенное или текущее
         Booking lastBooking;
-        List<Booking> lastItemBookings = bookingRepository.findBookingsInPastByItemsIdsAndStatus(
-                List.of(itemId), List.of(BookingStatus.CANCELED, BookingStatus.APPROVED)
-        );
+        List<Booking> lastItemBookings = bookingRepository.findAllByItem_IdInAndStatusInAndEndBeforeOrderByStartDesc(
+                List.of(itemId), List.of(BookingStatus.CANCELED, BookingStatus.APPROVED), LocalDateTime.now());
         if (lastItemBookings == null || lastItemBookings.isEmpty()) {
-            List<Booking> currentItemBookings = bookingRepository.findCurrentBookingsByItemsIds(List.of(itemId)); //., BookingStatus.APPROVED
+            List<Booking> currentItemBookings = bookingRepository
+                    .findAllByItem_IdInAndStartBeforeAndEndAfterOrderByStartDesc(
+                            List.of(itemId), LocalDateTime.now(), LocalDateTime.now());
+
             if (currentItemBookings == null || currentItemBookings.isEmpty()) {
                 lastBooking = null;
             } else {
@@ -197,7 +203,9 @@ public class ItemServiceImpl implements ItemService {
     private Booking getNextBookingForItem(Long itemId) {
         Booking nextBooking;
 
-        List<Booking> nextBookings = bookingRepository.findFutureBookingsByItemsIds(List.of(itemId));
+        List<Booking> nextBookings = bookingRepository.findAllByItem_IdInAndStartAfterOrderByStartDesc(
+                List.of(itemId), LocalDateTime.now());
+
         if (nextBookings == null || nextBookings.isEmpty()) {
             nextBooking = null;
         } else {

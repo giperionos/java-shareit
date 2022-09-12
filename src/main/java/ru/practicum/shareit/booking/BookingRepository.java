@@ -1,51 +1,31 @@
 package ru.practicum.shareit.booking;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
-    @Query("select b from Booking b where b.booker.id = ?1 order by b.start desc")
-    List<Booking> findAllBookingsByUserId(Long userId);
+    List<Booking> findAllByBooker_IdOrderByStartDesc(Long userId);
 
-    @Query("select b from Booking b where b.booker.id = ?1"
-            + " and b.start < current_timestamp and b.end > current_timestamp order by b.start desc")
-    List<Booking> findCurrentBookingsByUserId(Long userId);
+    List<Booking> findAllByBooker_IdAndStartBeforeAndEndAfterOrderByStartDesc(Long userId, LocalDateTime dateStart, LocalDateTime dateEnd);
 
-    @Query("select b from Booking b where b.booker.id = ?1"
-            + " and b.start > current_timestamp order by b.start desc")
-    List<Booking> findFutureBookingsByUserId(Long userId);
+    List<Booking> findAllByBooker_IdAndStartAfterOrderByStartDesc(Long userId, LocalDateTime dateStart);
 
-    @Query("select b from Booking b where b.booker.id = ?1 and b.status = ?2"
-            + " order by b.start desc")
-    List<Booking> findBookingsByUserIdAndStatus(Long userId, BookingStatus status);
+    List<Booking> findAllByBooker_IdAndStatusOrderByStartDesc(Long userId, BookingStatus status);
 
-    @Query("select b from Booking b where b.booker.id = ?1 and b.status in (?2)"
-            + " and b.end < current_timestamp order by b.start desc")
-    List<Booking> findBookingsInPastByUserIdAndStatus(Long userId, List<BookingStatus> statuses);
+    List<Booking> findAllByBooker_IdAndStatusInAndEndBeforeOrderByStartDesc(Long userId, List<BookingStatus> statuses, LocalDateTime endTime);
 
-    @Query("select b from Booking b where b.item.id in (?1) order by b.start desc")
-    List<Booking> findAllBookingsByItemsIds(List<Long> itemIds);
+    List<Booking> findAllByItem_IdInOrderByStartDesc(List<Long> itemIds);
 
-    @Query("select b from Booking b where b.item.id in (?1)"
-            + " and b.start < current_timestamp and b.end > current_timestamp order by b.start desc")
-    List<Booking> findCurrentBookingsByItemsIds(List<Long> itemIds);
+    List<Booking> findAllByItem_IdInAndStartBeforeAndEndAfterOrderByStartDesc(List<Long> itemIds, LocalDateTime dateStart, LocalDateTime dateEnd);
 
-    @Query("select b from Booking b where b.item.id in (?1)"
-            + " and b.start > current_timestamp order by b.start desc")
-    List<Booking> findFutureBookingsByItemsIds(List<Long> itemIds);
+    List<Booking> findAllByItem_IdInAndStartAfterOrderByStartDesc(List<Long> itemIds, LocalDateTime dateStart);
 
-    @Query("select b from Booking b where b.item.id in (?1) and b.status in (?2)"
-            + " order by b.start desc")
-    List<Booking> findBookingsByItemsIdsAndStatus(List<Long> itemIds, List<BookingStatus> statuses);
+    List<Booking> findAllByItem_IdInAndStatusInOrderByStartDesc(List<Long> itemIds, List<BookingStatus> statuses);
 
-    @Query("select b from Booking b where b.item.id in (?1) and b.status in (?2)"
-            + " and b.end < current_timestamp order by b.start desc")
-    List<Booking> findBookingsInPastByItemsIdsAndStatus(List<Long> itemIds, List<BookingStatus> statuses);
+    List<Booking> findAllByItem_IdInAndStatusInAndEndBeforeOrderByStartDesc(List<Long> itemIds, List<BookingStatus> statuses, LocalDateTime dateEnd);
 
-    @Query("select b from Booking b where b.booker.id = ?1 and b.item.id = ?2"
-            + " and b.end < current_timestamp order by b.start desc")
-    Booking findBookingByUserIdAndItemIdInPast(Long userId, Long itemId);
+    Booking findBookingByBooker_IdAndItem_IdAndEndBeforeOrderByStartDesc(Long userId, Long itemId, LocalDateTime dateEnd);
 }
