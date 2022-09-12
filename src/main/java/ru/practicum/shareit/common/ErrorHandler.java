@@ -7,7 +7,6 @@ import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.practicum.shareit.booking.exceptions.*;
 import ru.practicum.shareit.item.exceptions.CommentForNotExistBookingException;
 import ru.practicum.shareit.item.exceptions.ItemSecurityException;
