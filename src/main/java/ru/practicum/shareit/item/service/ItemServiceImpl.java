@@ -146,7 +146,7 @@ public class ItemServiceImpl implements ItemService {
             return new ArrayList<>();
         }
 
-        return itemRepository.findItemsByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyWord, keyWord).stream()
+        return itemRepository.findItemsByKeyWord(keyWord.toLowerCase()).stream()
                 .filter((Item::getAvailable))
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
