@@ -3,54 +3,83 @@ package ru.practicum.shareit.user.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.storage.UserStorage;
+import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.UserMapper;
+import ru.practicum.shareit.user.exceptions.UserAlreadyExistEmailException;
+import ru.practicum.shareit.user.exceptions.UserUnknownException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private final UserStorage userStorage;
+    private final UserRepository userRepository;
+    private static final String CONSTRAINT_UNIQUE_EMAIL_NAME = "uq_user_email";
 
     @Override
-    public User createUser(User user) {
-        return userStorage.addUser(user);
+    public UserDto createUser(UserDto userDto) {
+
+        User user = UserMapper.toUser(userDto);
+
+        try {
+            return UserMapper.toUserDto(userRepository.save(user));
+        } catch (Exception exception) {
+            if (exception.getMessage().toLowerCase().contains(CONSTRAINT_UNIQUE_EMAIL_NAME)) {
+                throw new UserAlreadyExistEmailException(String.format("Пользователь с таким email = %s уже существует.", user.getEmail()));
+            } else {
+                throw exception;
+            }
+        }
     }
 
     @Override
-    public User updateUserById(Long userId, User user) {
-        //получить из памяти пользователя
-        User foundedUser = userStorage.getUserById(userId);
+    public UserDto updateUserById(Long userId, UserDto userDto) {
 
-        //создать новый объект пользователя, как копию предыдущего,
-        //чтобы не менять поля того объекта, что уже в мапе
-        User userForUpdate = new User(foundedUser.getId(), foundedUser.getName(), foundedUser.getEmail());
+        //получить пользователя из хранилища
+        User userForUpdate = userRepository.findById(userId)
+                .orElseThrow(() -> new UserUnknownException(String.format("Пользователь с %d не найден.", userId)));
 
         //обновить нужно только те поля, что пришли
-        if (user.getName() != null) {
-            userForUpdate.setName(user.getName());
+        if (userDto.getName() != null) {
+            userForUpdate.setName(userDto.getName());
         }
 
-        if (user.getEmail() != null) {
-            userForUpdate.setEmail(user.getEmail());
+        if (userDto.getEmail() != null) {
+            userForUpdate.setEmail(userDto.getEmail());
         }
 
-        return userStorage.updateUser(userForUpdate);
+        try {
+            return  UserMapper.toUserDto(userRepository.save(userForUpdate));
+        } catch (Exception exception) {
+            if (exception.getMessage().toLowerCase().contains(CONSTRAINT_UNIQUE_EMAIL_NAME)) {
+                throw new UserAlreadyExistEmailException(String.format("Пользователь с таким email = %s уже существует.", userDto.getEmail()));
+            } else {
+                throw exception;
+            }
+        }
     }
 
     @Override
-    public User getUserById(Long userId) {
-        return userStorage.getUserById(userId);
+    public UserDto getUserById(Long userId) {
+        User foundedUser = userRepository.findById(userId)
+                .orElseThrow(() -> new UserUnknownException(String.format("Пользователь с %d не найден.", userId)));
+
+        return UserMapper.toUserDto(foundedUser);
     }
 
     @Override
-    public List<User> getAllUsers() {
-        return userStorage.getAllUsers();
+    public List<UserDto> getAllUsers() {
+        return userRepository.findAll().stream().map(UserMapper::toUserDto).collect(Collectors.toList());
     }
 
     @Override
     public void deleteUserById(Long userId) {
-        userStorage.deleteUserById(userId);
+        User userForDelete = userRepository.findById(userId)
+                .orElseThrow(() -> new UserUnknownException(String.format("Пользователь с %d не найден.", userId)));
+
+        userRepository.delete(userForDelete);
     }
 }

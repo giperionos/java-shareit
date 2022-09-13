@@ -1,42 +1,40 @@
-package ru.practicum.shareit.booking;
+package ru.practicum.shareit.item;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.practicum.shareit.item.Item;
+import org.hibernate.annotations.CreationTimestamp;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "bookings")
+@Table(name = "comments")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Booking {
+public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "booking_id")
+    @Column(name = "comment_id")
     private Long id;
 
-    @Column(name = "start_date", nullable = false)
-    private LocalDateTime start;
-
-    @Column(name = "end_date")
-    private LocalDateTime end;
+    @Column(name = "comment_text")
+    private String text;
 
     @ManyToOne
     @JoinColumn(name = "item_id", nullable = false)
     private Item item;
 
     @ManyToOne
-    @JoinColumn(name = "booker_id", nullable = false)
-    private User booker;
+    @JoinColumn(name = "author_id", nullable = false)
+    private User author;
 
-    @Column(name = "status")
-    private BookingStatus status;
+    @Column(name = "create_date")
+    @CreationTimestamp
+    private LocalDateTime created;
 }

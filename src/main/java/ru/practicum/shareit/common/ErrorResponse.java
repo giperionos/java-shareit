@@ -7,5 +7,5 @@ import lombok.Getter;
 @Getter
 public class ErrorResponse {
     private String serverStatusCode;
-    private String description;
+    private String error;
 }
