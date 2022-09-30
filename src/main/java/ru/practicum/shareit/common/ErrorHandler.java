@@ -12,6 +12,7 @@ import ru.practicum.shareit.item.exceptions.CommentForNotExistBookingException;
 import ru.practicum.shareit.item.exceptions.ItemSecurityException;
 import ru.practicum.shareit.item.exceptions.ItemUnavailableException;
 import ru.practicum.shareit.item.exceptions.ItemUnknownException;
+import ru.practicum.shareit.requests.exceptions.ItemRequestUnknownException;
 import ru.practicum.shareit.user.exceptions.UserAlreadyExistEmailException;
 import ru.practicum.shareit.user.exceptions.UserUnknownException;
 
@@ -47,7 +48,8 @@ public class ErrorHandler {
         return new ErrorResponse(HttpStatus.FORBIDDEN.toString(), exception.getMessage());
     }
 
-    @ExceptionHandler({UserUnknownException.class, ItemUnknownException.class, BookingUnknownException.class, BookingSecurityException.class})
+    @ExceptionHandler({UserUnknownException.class, ItemUnknownException.class,
+            BookingUnknownException.class, BookingSecurityException.class, ItemRequestUnknownException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleUnknownEntityException(RuntimeException exception) {
         log.info("404: {}", exception.getMessage(), exception);
