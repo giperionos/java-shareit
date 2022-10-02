@@ -2,6 +2,7 @@ package ru.practicum.shareit.requests.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.requests.ItemRequest;
@@ -52,7 +53,10 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequestWithItemInfoDto> getAllItemRequests(Long userId, PageRequest pageRequest) {
+    public List<ItemRequestWithItemInfoDto> getAllItemRequests(Long userId, Integer from, Integer size) {
+
+        int page = from / size;
+        final PageRequest pageRequest = PageRequest.of(page, size, Sort.by("created").descending());
 
         //запрашивать может любой пользователь, но все равно проверить, что такой есть
         User user = userRepository.findById(userId)

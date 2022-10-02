@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
-import ru.practicum.shareit.booking.BookingState;
 import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
 import ru.practicum.shareit.booking.dto.BookingFullInfoDto;
@@ -47,11 +46,12 @@ class BookingServiceImplTest {
 
     private Boolean available = Boolean.TRUE;
     private Boolean unavailable = Boolean.FALSE;
-    private Booking nullBooking = null;
     private ItemRequest nullRequest = null;
     private Long nullRequestId = null;
     private Boolean approved = Boolean.TRUE;
     private PageRequest pageRequest = PageRequest.of(0, 10);
+    private Integer from = 0;
+    private Integer size = 10;
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
     private User user1;
@@ -463,10 +463,10 @@ class BookingServiceImplTest {
         when(userRepository.findById(any(Long.class)))
                 .thenReturn(Optional.of(user2));
 
-        when(bookingRepository.findAllByBooker_Id(user2.getId(), pageRequest))
+        when(bookingRepository.findAllByBooker_Id(any(Long.class), any(PageRequest.class)))
                 .thenReturn(List.of(booking1));
 
-        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByUserIdAndState(user2.getId(), BookingState.ALL, pageRequest);
+        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByUserIdAndState(user2.getId(), "ALL", from, size);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -494,7 +494,7 @@ class BookingServiceImplTest {
         when(bookingRepository.findAllByBooker_IdAndStartBeforeAndEndAfter(any(Long.class), any(LocalDateTime.class), any(LocalDateTime.class), any(PageRequest.class)))
                 .thenReturn(List.of(booking1));
 
-        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByUserIdAndState(user2.getId(), BookingState.CURRENT, pageRequest);
+        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByUserIdAndState(user2.getId(),"CURRENT", from, size);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -522,7 +522,7 @@ class BookingServiceImplTest {
         when(bookingRepository.findAllByBooker_IdAndStatusInAndEndBefore(any(Long.class),anyList(), any(LocalDateTime.class), any(PageRequest.class)))
                 .thenReturn(List.of(booking1));
 
-        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByUserIdAndState(user2.getId(), BookingState.PAST, pageRequest);
+        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByUserIdAndState(user2.getId(),"PAST", from, size);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -550,7 +550,7 @@ class BookingServiceImplTest {
         when(bookingRepository.findAllByBooker_IdAndStartAfter(any(Long.class), any(LocalDateTime.class), any(PageRequest.class)))
                 .thenReturn(List.of(booking1));
 
-        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByUserIdAndState(user2.getId(), BookingState.FUTURE, pageRequest);
+        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByUserIdAndState(user2.getId(),"FUTURE", from, size);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -578,7 +578,7 @@ class BookingServiceImplTest {
         when(bookingRepository.findAllByBooker_IdAndStatus(any(Long.class), any(BookingStatus.class), any(PageRequest.class)))
                 .thenReturn(List.of(booking1));
 
-        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByUserIdAndState(user2.getId(), BookingState.WAITING, pageRequest);
+        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByUserIdAndState(user2.getId(),"WAITING", from, size);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -606,7 +606,7 @@ class BookingServiceImplTest {
         when(bookingRepository.findAllByBooker_IdAndStatus(any(Long.class), any(BookingStatus.class), any(PageRequest.class)))
                 .thenReturn(List.of(booking1));
 
-        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByUserIdAndState(user2.getId(), BookingState.REJECTED, pageRequest);
+        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByUserIdAndState(user2.getId(),"REJECTED", from, size);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -633,7 +633,7 @@ class BookingServiceImplTest {
 
         final UserUnknownException exception = assertThrows(
                 UserUnknownException.class,
-                () -> bookingService.getAllBookingsByUserIdAndState(user2.getId(), BookingState.ALL, pageRequest)
+                () -> bookingService.getAllBookingsByUserIdAndState(user2.getId(),"ALL", from, size)
         );
 
         final String expectedMessage = String.format("Пользователь с %d не найден.", user2.getId());
@@ -659,7 +659,7 @@ class BookingServiceImplTest {
         when(bookingRepository.findAllByItem_IdIn(anyList(), any(PageRequest.class)))
                 .thenReturn(List.of(booking1));
 
-        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByOwnerIdAndState(user1.getId(), BookingState.ALL, pageRequest);
+        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByOwnerIdAndState(user1.getId(),"ALL", from, size);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -691,7 +691,7 @@ class BookingServiceImplTest {
         when(bookingRepository.findAllByItem_IdInAndStartBeforeAndEndAfter(anyList(), any(LocalDateTime.class), any(LocalDateTime.class), any(PageRequest.class)))
                 .thenReturn(List.of(booking1));
 
-        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByOwnerIdAndState(user1.getId(), BookingState.CURRENT, pageRequest);
+        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByOwnerIdAndState(user1.getId(),"CURRENT", from, size);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -723,7 +723,7 @@ class BookingServiceImplTest {
         when(bookingRepository.findAllByItem_IdInAndStatusInAndEndBefore(anyList(),anyList(), any(LocalDateTime.class), any(PageRequest.class)))
                 .thenReturn(List.of(booking1));
 
-        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByOwnerIdAndState(user1.getId(), BookingState.PAST, pageRequest);
+        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByOwnerIdAndState(user1.getId(),"PAST", from, size);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -755,7 +755,7 @@ class BookingServiceImplTest {
         when(bookingRepository.findAllByItem_IdInAndStartAfter(anyList(), any(LocalDateTime.class), any(PageRequest.class)))
                 .thenReturn(List.of(booking1));
 
-        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByOwnerIdAndState(user1.getId(), BookingState.FUTURE, pageRequest);
+        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByOwnerIdAndState(user1.getId(),"FUTURE", from, size);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -787,7 +787,7 @@ class BookingServiceImplTest {
         when(bookingRepository.findAllByItem_IdInAndStatusIn(anyList(), anyList(), any(PageRequest.class)))
                 .thenReturn(List.of(booking1));
 
-        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByOwnerIdAndState(user1.getId(), BookingState.WAITING, pageRequest);
+        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByOwnerIdAndState(user1.getId(),"WAITING", from, size);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -819,7 +819,7 @@ class BookingServiceImplTest {
         when(bookingRepository.findAllByItem_IdInAndStatusIn(anyList(), anyList(), any(PageRequest.class)))
                 .thenReturn(List.of(booking1));
 
-        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByOwnerIdAndState(user1.getId(), BookingState.REJECTED, pageRequest);
+        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByOwnerIdAndState(user1.getId(),"REJECTED", from, size);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -848,7 +848,7 @@ class BookingServiceImplTest {
         when(itemRepository.findALlItemsByOwnerId(any(Long.class)))
                 .thenReturn(Collections.emptyList());
 
-        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByOwnerIdAndState(user1.getId(), BookingState.ALL, pageRequest);
+        final List<BookingFullInfoDto> result = bookingService.getAllBookingsByOwnerIdAndState(user1.getId(),"ALL", from, size);
 
         assertEquals(0, result.size());
 
@@ -868,7 +868,7 @@ class BookingServiceImplTest {
 
         final UserUnknownException exception = assertThrows(
                 UserUnknownException.class,
-                () -> bookingService.getAllBookingsByOwnerIdAndState(user1.getId(), BookingState.ALL, pageRequest)
+                () -> bookingService.getAllBookingsByOwnerIdAndState(user1.getId(),"ALL", from, size)
         );
 
         final String expectedMessage = String.format("Пользователь с %d не найден.", user1.getId());

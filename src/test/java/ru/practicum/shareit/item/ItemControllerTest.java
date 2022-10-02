@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -320,7 +319,7 @@ class ItemControllerTest {
 
     @Test
     void getSuccessAllItemsForUserId() throws Exception {
-        when(itemService.getAllItemsForUser(any(Long.class), any(PageRequest.class)))
+        when(itemService.getAllItemsForUser(any(Long.class), any(Integer.class), any(Integer.class)))
                 .thenReturn(List.of(itemWithBookingsAndCommentsDto));
 
         mockMvc.perform(get("/items")
@@ -352,12 +351,12 @@ class ItemControllerTest {
                 .andExpect(jsonPath("$.[0].comments.[1].created").value(commentDto2.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
 
 
-        verify(itemService, times(1)).getAllItemsForUser(any(Long.class), any(PageRequest.class));
+        verify(itemService, times(1)).getAllItemsForUser(any(Long.class), any(Integer.class), any(Integer.class));
     }
 
     @Test
     void getSuccessSearchItemsWithText() throws Exception {
-        when(itemService.getItemsWithKeyWord(any(String.class), any(PageRequest.class)))
+        when(itemService.getItemsWithKeyWord(any(String.class), any(Integer.class), any(Integer.class)))
                 .thenReturn(List.of(itemDto, itemDto5));
 
         mockMvc.perform(get("/items/search")
@@ -379,7 +378,7 @@ class ItemControllerTest {
                 .andExpect(jsonPath("$.[1].available").value(itemDto5.getAvailable()))
                 .andExpect(jsonPath("$.[1].requestId").value(itemDto5.getRequestId()));
 
-        verify(itemService, times(1)).getItemsWithKeyWord(any(String.class), any(PageRequest.class));
+        verify(itemService, times(1)).getItemsWithKeyWord(any(String.class), any(Integer.class), any(Integer.class));
     }
 
     @Test

@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -21,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -140,7 +138,7 @@ class ItemRequestControllerTest {
 
     @Test
     void getAllItemRequests() throws Exception {
-        when(itemRequestService.getAllItemRequests(any(Long.class), any(PageRequest.class)))
+        when(itemRequestService.getAllItemRequests(any(Long.class), any(Integer.class), any(Integer.class)))
                 .thenReturn(List.of(requestWithItemInfo, requestWithItemInfo2));
 
         mockMvc.perform(get("/requests/all")
@@ -164,7 +162,7 @@ class ItemRequestControllerTest {
                 .andExpect(jsonPath("$.[1].created").value(requestWithItemInfo2.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)))
                 .andExpect(jsonPath("$.[1].items.length()").value(requestWithItemInfo2.getItems().size()));
 
-        verify(itemRequestService, times(1)).getAllItemRequests(any(Long.class), any(PageRequest.class));
+        verify(itemRequestService, times(1)).getAllItemRequests(any(Long.class), any(Integer.class), any(Integer.class));
     }
 
     @Test

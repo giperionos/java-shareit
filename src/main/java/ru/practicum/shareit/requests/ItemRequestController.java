@@ -1,8 +1,6 @@
 package ru.practicum.shareit.requests;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.common.Create;
@@ -37,9 +35,7 @@ public class ItemRequestController {
     public List<ItemRequestWithItemInfoDto> getAllItemRequests(@RequestHeader("X-Sharer-User-Id") Long userId,
                                    @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")  Integer from,
                                    @Positive @RequestParam(name = "size", defaultValue = "10")  Integer size) {
-        int page = from / size;
-        final PageRequest pageRequest = PageRequest.of(page, size, Sort.by("created").descending());
-        return itemRequestService.getAllItemRequests(userId, pageRequest);
+        return itemRequestService.getAllItemRequests(userId, from, size);
     }
 
     @GetMapping("/{requestId}")

@@ -51,7 +51,8 @@ class ItemServiceImplTest {
     private String unknownKeyWord = "unknown";
     private String nullKeyWord = null;
     private String blankKeyWord = "";
-    private Booking nullBooking = null;
+    private Integer from = 0;
+    private Integer size = 10;
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
     private User user1;
@@ -779,7 +780,7 @@ class ItemServiceImplTest {
         when(bookingRepository.findAllByItem_IdInAndStartAfter(anyList(), any(LocalDateTime.class), any(PageRequest.class)))
                 .thenReturn(List.of(nextBooking));
 
-        final List<ItemWithBookingsAndCommentsDto> result = itemService.getAllItemsForUser(user3.getId(), PageRequest.of(0, 10));
+        final List<ItemWithBookingsAndCommentsDto> result = itemService.getAllItemsForUser(user3.getId(), from, size);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -848,7 +849,7 @@ class ItemServiceImplTest {
         when(itemRepository.findItemsByKeyWord(any(String.class), any(PageRequest.class)))
                 .thenReturn(Collections.emptyList());
 
-        List<ItemDto> result = itemService.getItemsWithKeyWord(unknownKeyWord, PageRequest.of(0, 10));
+        List<ItemDto> result = itemService.getItemsWithKeyWord(unknownKeyWord, from, size);
 
         assertNotNull(result);
         assertEquals(0, result.size());
@@ -861,12 +862,12 @@ class ItemServiceImplTest {
         when(itemRepository.findItemsByKeyWord(any(String.class), any(PageRequest.class)))
                 .thenReturn(Collections.emptyList());
 
-        List<ItemDto> result = itemService.getItemsWithKeyWord(nullKeyWord, PageRequest.of(0, 10));
+        List<ItemDto> result = itemService.getItemsWithKeyWord(nullKeyWord, from, size);
 
         assertNotNull(result);
         assertEquals(0, result.size());
 
-        List<ItemDto> result2 = itemService.getItemsWithKeyWord(blankKeyWord, PageRequest.of(0, 10));
+        List<ItemDto> result2 = itemService.getItemsWithKeyWord(blankKeyWord, from, size);
 
         assertNotNull(result2);
         assertEquals(0, result2.size());
@@ -879,7 +880,7 @@ class ItemServiceImplTest {
         when(itemRepository.findItemsByKeyWord(any(String.class), any(PageRequest.class)))
                 .thenReturn(List.of(item1, item2, item3));
 
-        List<ItemDto> result = itemService.getItemsWithKeyWord(keyWord, PageRequest.of(0, 10));
+        List<ItemDto> result = itemService.getItemsWithKeyWord(keyWord, from, size);
 
         assertNotNull(result);
         assertEquals(2, result.size());

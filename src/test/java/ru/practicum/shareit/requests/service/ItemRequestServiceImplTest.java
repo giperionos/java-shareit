@@ -41,6 +41,8 @@ class ItemRequestServiceImplTest {
     private Long itemId = 1L;
     private Boolean available = Boolean.TRUE;
     private PageRequest pageRequest = PageRequest.of(0, 10, Sort.by("created").descending());
+    private Integer from = 0;
+    private Integer size = 10;
     private ItemRequestDto itemRequestDto;
     private ItemRequest itemRequest;
     private User user;
@@ -197,7 +199,7 @@ class ItemRequestServiceImplTest {
         when(itemRepository.findAllByRequest_Id(requestId))
                 .thenReturn(List.of(item));
 
-        final List<ItemRequestWithItemInfoDto> requests = itemRequestService.getAllItemRequests(userId2, pageRequest);
+        final List<ItemRequestWithItemInfoDto> requests = itemRequestService.getAllItemRequests(userId2, from, size);
 
         assertNotNull(requests);
         assertEquals(1, requests.size());
@@ -231,7 +233,7 @@ class ItemRequestServiceImplTest {
 
         final UserUnknownException exception = assertThrows(
                 UserUnknownException.class,
-                () -> itemRequestService.getAllItemRequests(userId, pageRequest)
+                () -> itemRequestService.getAllItemRequests(userId, from, size)
         );
 
         final String expectedMessage = String.format("Пользователь с %d не найден.", userId);

@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
@@ -21,7 +20,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -188,7 +186,7 @@ class BookingControllerTest {
 
     @Test
     void getSuccessAllBookingsByUserIdAndState() throws Exception {
-        when(bookingService.getAllBookingsByUserIdAndState(any(Long.class), any(BookingState.class), any(PageRequest.class)))
+        when(bookingService.getAllBookingsByUserIdAndState(any(Long.class), any(String.class), any(Integer.class), any(Integer.class)))
                 .thenReturn(List.of(bookingFullInfoDto));
 
         mockMvc.perform(get("/bookings")
@@ -211,12 +209,12 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].item.available").value(itemDto.getAvailable()))
                 .andExpect(jsonPath("$.[0].item.requestId").value(itemDto.getRequestId()));
 
-        verify(bookingService, times(1)).getAllBookingsByUserIdAndState(any(Long.class), any(BookingState.class), any(PageRequest.class));
+        verify(bookingService, times(1)).getAllBookingsByUserIdAndState(any(Long.class), any(String.class), any(Integer.class), any(Integer.class));
     }
 
     @Test
     void getSuccessAllBookingsByOwnerIdAndState() throws Exception {
-        when(bookingService.getAllBookingsByOwnerIdAndState(any(Long.class), any(BookingState.class), any(PageRequest.class)))
+        when(bookingService.getAllBookingsByOwnerIdAndState(any(Long.class), any(String.class), any(Integer.class), any(Integer.class)))
                 .thenReturn(List.of(bookingFullInfoDto));
 
         mockMvc.perform(get("/bookings/owner")
@@ -239,6 +237,6 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].item.available").value(itemDto.getAvailable()))
                 .andExpect(jsonPath("$.[0].item.requestId").value(itemDto.getRequestId()));
 
-        verify(bookingService, times(1)).getAllBookingsByOwnerIdAndState(any(Long.class), any(BookingState.class), any(PageRequest.class));
+        verify(bookingService, times(1)).getAllBookingsByOwnerIdAndState(any(Long.class), any(String.class), any(Integer.class), any(Integer.class));
     }
 }

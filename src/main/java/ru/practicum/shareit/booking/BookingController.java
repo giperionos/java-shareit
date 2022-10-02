@@ -1,14 +1,11 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
 import ru.practicum.shareit.booking.dto.BookingFullInfoDto;
 import ru.practicum.shareit.booking.dto.BookingItemOwnerDto;
-import ru.practicum.shareit.booking.exceptions.BookingUnknownStateException;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.common.Create;
 import ru.practicum.shareit.common.StartDateBeforeEndDateValidator;
@@ -50,13 +47,7 @@ public class BookingController {
                                                             @RequestParam(name = "state", defaultValue = "ALL") String stateStr,
                                                             @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")  Integer from,
                                                             @Positive @RequestParam(name = "size", defaultValue = "10")  Integer size) {
-        BookingState state = BookingState.from(stateStr)
-                .orElseThrow(() -> new BookingUnknownStateException(String.format("Unknown state: %s", stateStr)));
-
-        int page = from / size;
-        final PageRequest pageRequest = PageRequest.of(page, size, Sort.by("start").descending());
-
-        return bookingService.getAllBookingsByUserIdAndState(userId, state, pageRequest);
+        return bookingService.getAllBookingsByUserIdAndState(userId, stateStr, from, size);
     }
 
     @GetMapping("/owner")
@@ -64,13 +55,6 @@ public class BookingController {
                                                              @RequestParam(name = "state", defaultValue = "ALL") String stateStr,
                                                              @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")  Integer from,
                                                              @Positive @RequestParam(name = "size", defaultValue = "10")  Integer size) {
-
-        BookingState state = BookingState.from(stateStr)
-                .orElseThrow(() -> new BookingUnknownStateException(String.format("Unknown state: %s", stateStr)));
-
-        int page = from / size;
-        final PageRequest pageRequest = PageRequest.of(page, size, Sort.by("start").descending());
-
-        return bookingService.getAllBookingsByOwnerIdAndState(ownerId, state, pageRequest);
+        return bookingService.getAllBookingsByOwnerIdAndState(ownerId, stateStr, from, size);
     }
 }

@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.common.Create;
@@ -46,9 +45,7 @@ public class ItemController {
     public List<ItemWithBookingsAndCommentsDto> getAllItemsForUserId(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                                      @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")  Integer from,
                                                                      @Positive @RequestParam(name = "size", defaultValue = "10")  Integer size) {
-        int page = from / size;
-        final PageRequest pageRequest = PageRequest.of(page, size);
-        return itemService.getAllItemsForUser(userId, pageRequest);
+        return itemService.getAllItemsForUser(userId, from, size);
     }
 
     @GetMapping("/search")
@@ -56,10 +53,7 @@ public class ItemController {
                                              @RequestParam(name = "text") String text,
                                              @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")  Integer from,
                                              @Positive @RequestParam(name = "size", defaultValue = "10")  Integer size) {
-        int page = from / size;
-        final PageRequest pageRequest = PageRequest.of(page, size);
-
-        return itemService.getItemsWithKeyWord(text, pageRequest);
+        return itemService.getItemsWithKeyWord(text, from, size);
     }
 
     @PostMapping("/{itemId}/comment")

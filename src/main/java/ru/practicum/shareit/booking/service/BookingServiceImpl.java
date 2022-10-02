@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -119,7 +120,14 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingFullInfoDto> getAllBookingsByUserIdAndState(Long userId, BookingState state, PageRequest pageRequest) {
+    public List<BookingFullInfoDto> getAllBookingsByUserIdAndState(Long userId, String stateStr, Integer from, Integer size) {
+
+        BookingState state = BookingState.from(stateStr)
+                .orElseThrow(() -> new BookingUnknownStateException(String.format("Unknown state: %s", stateStr)));
+
+        int page = from / size;
+        final PageRequest pageRequest = PageRequest.of(page, size, Sort.by("start").descending());
+
         //проверить, что такой пользователь есть
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserUnknownException(String.format("Пользователь с %d не найден.", userId)));
@@ -167,7 +175,14 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingFullInfoDto> getAllBookingsByOwnerIdAndState(Long ownerId, BookingState state, PageRequest pageRequest) {
+    public List<BookingFullInfoDto> getAllBookingsByOwnerIdAndState(Long ownerId, String stateStr, Integer from, Integer size) {
+
+        BookingState state = BookingState.from(stateStr)
+                .orElseThrow(() -> new BookingUnknownStateException(String.format("Unknown state: %s", stateStr)));
+
+        int page = from / size;
+        final PageRequest pageRequest = PageRequest.of(page, size, Sort.by("start").descending());
+
         //проверить, что такой пользователь есть
         User user = userRepository.findById(ownerId)
                 .orElseThrow(() -> new UserUnknownException(String.format("Пользователь с %d не найден.", ownerId)));

@@ -141,7 +141,11 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemWithBookingsAndCommentsDto> getAllItemsForUser(Long userId, PageRequest pageRequest) {
+    public List<ItemWithBookingsAndCommentsDto> getAllItemsForUser(Long userId, Integer from, Integer size) {
+
+        int page = from / size;
+        final PageRequest pageRequest = PageRequest.of(page, size);
+
         //сначала нужно убедиться, что такой пользователь существует
         userRepository.findById(userId)
                 .orElseThrow(() -> new UserUnknownException(String.format("Пользователь с %d не найден.", userId)));
@@ -158,10 +162,14 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getItemsWithKeyWord(String keyWord, PageRequest pageRequest) {
+    public List<ItemDto> getItemsWithKeyWord(String keyWord, Integer from, Integer size) {
+
         if (keyWord == null || keyWord.isBlank()) {
             return new ArrayList<>();
         }
+
+        int page = from / size;
+        final PageRequest pageRequest = PageRequest.of(page, size);
 
         return itemRepository.findItemsByKeyWord(keyWord.toLowerCase(), pageRequest).stream()
                 .filter((Item::getAvailable))
