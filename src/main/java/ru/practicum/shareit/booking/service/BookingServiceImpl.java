@@ -1,6 +1,8 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -118,7 +120,14 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingFullInfoDto> getAllBookingsByUserIdAndState(Long userId, BookingState state) {
+    public List<BookingFullInfoDto> getAllBookingsByUserIdAndState(Long userId, String stateStr, Integer from, Integer size) {
+
+        BookingState state = BookingState.from(stateStr)
+                .orElseThrow(() -> new BookingUnknownStateException(String.format("Unknown state: %s", stateStr)));
+
+        int page = from / size;
+        final PageRequest pageRequest = PageRequest.of(page, size, Sort.by("start").descending());
+
         //проверить, что такой пользователь есть
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserUnknownException(String.format("Пользователь с %d не найден.", userId)));
@@ -127,35 +136,35 @@ public class BookingServiceImpl implements BookingService {
 
         switch (state) {
             case ALL:
-                userBookings = bookingRepository.findAllByBooker_IdOrderByStartDesc(userId);
+                userBookings = bookingRepository.findAllByBooker_Id(userId, pageRequest);
                 break;
 
             case CURRENT:
                 userBookings = bookingRepository
-                        .findAllByBooker_IdAndStartBeforeAndEndAfterOrderByStartDesc(
-                                userId, LocalDateTime.now(), LocalDateTime.now());
+                        .findAllByBooker_IdAndStartBeforeAndEndAfter(
+                                userId, LocalDateTime.now(), LocalDateTime.now(), pageRequest);
                 break;
 
             case PAST:
                 userBookings = bookingRepository
-                        .findAllByBooker_IdAndStatusInAndEndBeforeOrderByStartDesc(
+                        .findAllByBooker_IdAndStatusInAndEndBefore(
                                 userId, List.of(BookingStatus.CANCELED, BookingStatus.APPROVED),
-                                LocalDateTime.now());
+                                LocalDateTime.now(), pageRequest);
                 break;
 
             case FUTURE:
                 userBookings = bookingRepository
-                        .findAllByBooker_IdAndStartAfterOrderByStartDesc(userId, LocalDateTime.now());
+                        .findAllByBooker_IdAndStartAfter(userId, LocalDateTime.now(), pageRequest);
                 break;
 
             case WAITING:
                 userBookings = bookingRepository
-                        .findAllByBooker_IdAndStatusOrderByStartDesc(userId, BookingStatus.WAITING);
+                        .findAllByBooker_IdAndStatus(userId, BookingStatus.WAITING, pageRequest);
                 break;
 
             case REJECTED:
                 userBookings = bookingRepository
-                        .findAllByBooker_IdAndStatusOrderByStartDesc(userId, BookingStatus.REJECTED);
+                        .findAllByBooker_IdAndStatus(userId, BookingStatus.REJECTED, pageRequest);
                 break;
 
             default:
@@ -166,13 +175,20 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingFullInfoDto> getAllBookingsByOwnerIdAndState(Long ownerId, BookingState state) {
+    public List<BookingFullInfoDto> getAllBookingsByOwnerIdAndState(Long ownerId, String stateStr, Integer from, Integer size) {
+
+        BookingState state = BookingState.from(stateStr)
+                .orElseThrow(() -> new BookingUnknownStateException(String.format("Unknown state: %s", stateStr)));
+
+        int page = from / size;
+        final PageRequest pageRequest = PageRequest.of(page, size, Sort.by("start").descending());
+
         //проверить, что такой пользователь есть
         User user = userRepository.findById(ownerId)
                 .orElseThrow(() -> new UserUnknownException(String.format("Пользователь с %d не найден.", ownerId)));
 
         //проверить, что у этого пользователя есть вещи, в которых он является владельцем
-        List<Item> ownerItems = itemRepository.findItemsByOwnerId(ownerId);
+        List<Item> ownerItems = itemRepository.findALlItemsByOwnerId(ownerId);
 
         //Если в данного пользователя нет вещей во владении
         if (ownerItems == null || ownerItems.isEmpty()) {
@@ -190,32 +206,32 @@ public class BookingServiceImpl implements BookingService {
 
         switch (state) {
             case ALL:
-                userBookings = bookingRepository.findAllByItem_IdInOrderByStartDesc(itemIds);
+                userBookings = bookingRepository.findAllByItem_IdIn(itemIds, pageRequest);
                 break;
 
             case CURRENT:
-                userBookings = bookingRepository.findAllByItem_IdInAndStartBeforeAndEndAfterOrderByStartDesc(
-                        itemIds, LocalDateTime.now(), LocalDateTime.now());
+                userBookings = bookingRepository.findAllByItem_IdInAndStartBeforeAndEndAfter(
+                        itemIds, LocalDateTime.now(), LocalDateTime.now(), pageRequest);
                 break;
 
             case PAST:
-                userBookings = bookingRepository.findAllByItem_IdInAndStatusInAndEndBeforeOrderByStartDesc(
-                        itemIds, List.of(BookingStatus.CANCELED, BookingStatus.APPROVED), LocalDateTime.now());
+                userBookings = bookingRepository.findAllByItem_IdInAndStatusInAndEndBefore(
+                        itemIds, List.of(BookingStatus.CANCELED, BookingStatus.APPROVED), LocalDateTime.now(), pageRequest);
                 break;
 
             case FUTURE:
-                userBookings = bookingRepository.findAllByItem_IdInAndStartAfterOrderByStartDesc(
-                        itemIds, LocalDateTime.now());
+                userBookings = bookingRepository.findAllByItem_IdInAndStartAfter(
+                        itemIds, LocalDateTime.now(), pageRequest);
                 break;
 
             case WAITING:
-                userBookings = bookingRepository.findAllByItem_IdInAndStatusInOrderByStartDesc(
-                        itemIds, List.of(BookingStatus.WAITING));
+                userBookings = bookingRepository.findAllByItem_IdInAndStatusIn(
+                        itemIds, List.of(BookingStatus.WAITING), pageRequest);
                 break;
 
             case REJECTED:
-                userBookings = bookingRepository.findAllByItem_IdInAndStatusInOrderByStartDesc(
-                        itemIds, List.of(BookingStatus.REJECTED));
+                userBookings = bookingRepository.findAllByItem_IdInAndStatusIn(
+                        itemIds, List.of(BookingStatus.REJECTED), pageRequest);
                 break;
 
             default:

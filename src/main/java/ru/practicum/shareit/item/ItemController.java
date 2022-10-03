@@ -10,11 +10,14 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemWithBookingsAndCommentsDto;
 import ru.practicum.shareit.item.service.ItemService;
 
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor
+@Validated
 public class ItemController {
 
     private final ItemService itemService;
@@ -39,14 +42,18 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemWithBookingsAndCommentsDto> getAllItemsForUserId(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        return itemService.getAllItemsForUser(userId);
+    public List<ItemWithBookingsAndCommentsDto> getAllItemsForUserId(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                                                     @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")  Integer from,
+                                                                     @Positive @RequestParam(name = "size", defaultValue = "10")  Integer size) {
+        return itemService.getAllItemsForUser(userId, from, size);
     }
 
     @GetMapping("/search")
     public List<ItemDto> searchItemsWithText(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                             @RequestParam(name = "text") String text) {
-        return itemService.getItemsWithKeyWord(text);
+                                             @RequestParam(name = "text") String text,
+                                             @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")  Integer from,
+                                             @Positive @RequestParam(name = "size", defaultValue = "10")  Integer size) {
+        return itemService.getItemsWithKeyWord(text, from, size);
     }
 
     @PostMapping("/{itemId}/comment")
